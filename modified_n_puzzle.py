@@ -82,9 +82,14 @@ class Queue:
 
 
 class ModifiedNPuzzle:
-    def __init__(self, start, goal, h):
-        self.start = self.__readfile(start)
-        self.goal = self.__readfile(goal)
+    def __init__(self, start, goal, h, d=False):
+
+        if type(start) == 'str':
+            self.start = self.__readfile(start)
+            self.goal = self.__readfile(goal)
+        else:
+            self.start = start
+            self.goal = goal
 
         self.size = int(len(self.start) ** 0.5)
         self.open_queue = Queue()
@@ -94,6 +99,8 @@ class ModifiedNPuzzle:
             self.h = lambda s, g: s.manhattan(g)
         else:
             self.h = lambda s, g: s.misplaced(g)
+
+        self.d = d
 
     @staticmethod
     def __readfile(path):
@@ -167,6 +174,8 @@ class ModifiedNPuzzle:
 
         self.__writefile('output.txt', moves)
 
+        return len(self.closed_queue)
+
     def expand(self, node):
         children = []
 
@@ -224,6 +233,18 @@ class ModifiedNPuzzle:
 
         return children
 
+    def print_start(self):
+        print("Start state:")
+        for row in [self.start[i:i + self.size] for i in range(0, self.size ** 2, self.size)]:
+            print(*row, sep="\t")
+        print()
+
+    def print_goal(self):
+        print("Goal state:")
+        for row in [self.goal[i:i + self.size] for i in range(0, self.size ** 2, self.size)]:
+            print(*row, sep="\t")
+        print()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Modified N Puzzle Problem")
@@ -243,6 +264,14 @@ if __name__ == "__main__":
                         default="misplaced",
                         choices=["misplaced", "manhattan"])
 
+    parser.add_argument('-d',
+                        dest='d',
+                        default=False,
+                        help='get graphical solution step by step')
+
     args = parser.parse_args()
 
-    ModifiedNPuzzle(args.start, args.goal, args.h).solve()
+    puzzle = ModifiedNPuzzle(args.start, args.goal, args.h, args.d)
+    puzzle.print_start()
+    puzzle.print_goal()
+    puzzle.solve()
