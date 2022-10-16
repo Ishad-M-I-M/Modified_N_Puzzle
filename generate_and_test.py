@@ -85,7 +85,7 @@ def generate_goal(state, size, n):
     return goal
 
 
-def run(size, moves=20):
+def run(size, moves=10):
     start = generate_start_states(size)
     goal = generate_goal(start, size, moves)
 
@@ -113,23 +113,28 @@ if __name__ == "__main__":
         6 x 6 - 8 x 8 = 10 for each
         9 x 9 - 10 x 10 = 5 for each
         11 x 11 - 20 x 20 = 1 for each
-        
+
         total = 100
     '''
 
-    for _ in range(1):
+    f = lambda i, s: print(f"\033[96m Iteration {i} of size {s}\n \033[0m")
+    for _ in range(50):
+        f(_, 5)
         results.append(run(5))
-    #
-    # for _ in range(10):
-    #     for j in range(6,9):
-    #         results.append(run(j))
-    #
-    # for _ in range(5):
-    #     for k in range(9,11):
-    #         results.append(run(k))
-    #
-    # for l in range(11, 21):
-    #     results.append(run(l))
+
+    for j in range(6,9):
+        for _ in range(10):
+            f(_, j)
+            results.append(run(j))
+
+    for k in range(9,11):
+        for _ in range(5):
+            f(_, k)
+            results.append(run(k))
+
+    for l in range(11, 21):
+        f(1, l)
+        results.append(run(l))
 
     with open("results.txt", 'w') as f:
         for m, n in results:
