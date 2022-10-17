@@ -86,7 +86,8 @@ class Queue:
 
 
 class ModifiedNPuzzle:
-    def __init__(self, start, goal, h, w=False):
+    time = 10.0
+    def __init__(self, start, goal, h, w=False, time=10.0):
 
         if isinstance(start, list):
             self.start = start
@@ -106,6 +107,7 @@ class ModifiedNPuzzle:
             self.h = lambda s, g: s.misplaced(g)
 
         self.w = w
+        ModifiedNPuzzle.time = time
 
     @staticmethod
     def __readfile(path):
@@ -125,7 +127,9 @@ class ModifiedNPuzzle:
     @staticmethod
     def quit_function(fn_name):
         # print to stderr, unbuffered in Python 2.
-        print('\033[91mTakes too long to solve. Interrupt\033[0m')
+        print(f'\033[91mTakes too long to solve. Interrupting the execution.\n '
+              f'Failed to solve within : {ModifiedNPuzzle.time} s \n'
+              'try by specifying larger --time value\033[0m')
         sys.stderr.flush()  # Python 3 stderr is likely buffered.
         _thread.interrupt_main()  # raises KeyboardInterrupt
 
@@ -150,7 +154,7 @@ class ModifiedNPuzzle:
 
         return outer
 
-    @exit_after(10.0)
+    @exit_after(time)
     def solve(self):
 
         start_node = Node(self.start,
@@ -295,9 +299,17 @@ if __name__ == "__main__":
                         default="misplaced",
                         choices=["misplaced", "manhattan"])
 
+    parser.add_argument('--time',
+                        dest='time',
+                        default=10.0,
+                        )
+
     args = parser.parse_args()
 
-    puzzle = ModifiedNPuzzle(args.start, args.goal, args.h, True)
+    puzzle = ModifiedNPuzzle(args.start, args.goal, args.h, True, args.time)
     puzzle.print_start()
     puzzle.print_goal()
-    puzzle.solve()
+    try:
+        puzzle.solve()
+    except KeyboardInterrupt:
+        sys.exit()
