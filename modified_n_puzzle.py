@@ -1,5 +1,9 @@
+import _thread
+import math
 import re
 import argparse
+import sys
+import threading
 
 
 class Node:
@@ -82,16 +86,17 @@ class Queue:
 
 
 class ModifiedNPuzzle:
-    def __init__(self, start, goal, h, d=False):
+    def __init__(self, start, goal, h, w=False):
 
-        if type(start) == 'str':
-            self.start = self.__readfile(start)
-            self.goal = self.__readfile(goal)
-        else:
+        if isinstance(start, list):
             self.start = start
             self.goal = goal
+        else:
+            self.start = self.__readfile(start)
+            self.goal = self.__readfile(goal)
 
-        self.size = int(len(self.start) ** 0.5)
+        self.size = math.ceil(math.sqrt(len(self.start)))
+
         self.open_queue = Queue()
         self.closed_queue = Queue()
 
@@ -100,15 +105,14 @@ class ModifiedNPuzzle:
         else:
             self.h = lambda s, g: s.misplaced(g)
 
-        self.d = d
+        self.w = w
 
     @staticmethod
     def __readfile(path):
         file = open(path, 'r')
         text = file.read()
         file.close()
-
-        return re.split('\t|\n', text)[:-1]
+        return re.split('\t|\n', text.strip())
 
     @staticmethod
     def __writefile(path, moves):
@@ -117,6 +121,36 @@ class ModifiedNPuzzle:
         file.write(text)
         file.close()
 
+    # methods to limit run time
+    @staticmethod
+    def quit_function(fn_name):
+        # print to stderr, unbuffered in Python 2.
+        print('\033[91mTakes too long to solve. Interrupt\033[0m')
+        sys.stderr.flush()  # Python 3 stderr is likely buffered.
+        _thread.interrupt_main()  # raises KeyboardInterrupt
+
+    @staticmethod
+    def exit_after(s):
+        '''
+        use as decorator to exit process if
+        function takes longer than s seconds
+        '''
+
+        def outer(fn):
+            def inner(*args, **kwargs):
+                timer = threading.Timer(s, ModifiedNPuzzle.quit_function, args=[fn.__name__])
+                timer.start()
+                try:
+                    result = fn(*args, **kwargs)
+                finally:
+                    timer.cancel()
+                return result
+
+            return inner
+
+        return outer
+
+    @exit_after(10.0)
     def solve(self):
 
         start_node = Node(self.start,
@@ -172,22 +206,19 @@ class ModifiedNPuzzle:
         print("Number of nodes checked :", len(self.closed_queue))
         print("Solution :", moves)
 
-        self.__writefile('output.txt', moves)
+        if self.w:
+            self.__writefile('output.txt', moves)
 
         return len(self.closed_queue)
 
     def expand(self, node):
         children = []
 
-        new_state = node.state[:]
+        moving_tiles = [i for i, e in enumerate(node.state) if e == "-"]
 
-        zero1 = node.state.index('-')
-        new_state[zero1] = 1
-        zero2 = new_state.index('-')
+        new_state = node.state.copy()
 
-        new_state = node.state[:]
-
-        for n in [zero1, zero2]:
+        for n in moving_tiles:
 
             row = n // self.size  # row number
 
@@ -264,14 +295,9 @@ if __name__ == "__main__":
                         default="misplaced",
                         choices=["misplaced", "manhattan"])
 
-    parser.add_argument('-d',
-                        dest='d',
-                        default=False,
-                        help='get graphical solution step by step')
-
     args = parser.parse_args()
 
-    puzzle = ModifiedNPuzzle(args.start, args.goal, args.h, args.d)
+    puzzle = ModifiedNPuzzle(args.start, args.goal, args.h, True)
     puzzle.print_start()
     puzzle.print_goal()
     puzzle.solve()

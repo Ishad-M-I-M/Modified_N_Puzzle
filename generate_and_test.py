@@ -1,8 +1,6 @@
 import random
-import multitasking
 import modified_n_puzzle
 
-multitasking.set_max_threads(multitasking.config["CPU_CORES"] * 5)
 
 def generate_start_states(size):
     """generate a start configuration"""
@@ -86,7 +84,7 @@ def generate_goal(state, size, n):
 
     return goal
 
-@multitasking.task
+
 def run(size, moves=10):
     start = generate_start_states(size)
     goal = generate_goal(start, size, moves)
@@ -102,8 +100,17 @@ def run(size, moves=10):
         "misplaced"
     )
 
-    result = puzzle1.solve(), puzzle2.solve()
-    print("------------------------------------> ({}, {})".format(*result))
+    try:
+        return puzzle1.solve(), puzzle2.solve()
+    except:
+        return run(size, moves)
+
+
+def write_results(results):
+    with open('result.txt', 'w') as f:
+        for scores in results:
+            f.write(str(scores[0]) + " " + str(scores[1])+"\n")
+
 
 if __name__ == "__main__":
     '''
@@ -117,23 +124,26 @@ if __name__ == "__main__":
         total = 100
     '''
 
+    results = []
+
     f = lambda i, s: print(f"\033[96m Iteration {i} of size {s}\n \033[0m")
     for _ in range(50):
         f(_, 5)
-        run(5)
+        results.append(run(5))
 
-    for j in range(6,9):
+    for j in range(6, 9):
         for _ in range(10):
             f(_, j)
-            run(j)
+            results.append(run(j))
 
-    for k in range(9,11):
+    for k in range(9, 11):
         for _ in range(5):
             f(_, k)
-            run(k)
+            results.append(run(k))
 
     for l in range(11, 21):
         f(1, l)
-        run(l)
+        results.append(run(l))
 
-
+    print(results)
+    write_results(results)
