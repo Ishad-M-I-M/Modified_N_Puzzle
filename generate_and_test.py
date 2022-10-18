@@ -85,7 +85,7 @@ def generate_goal(state, size, n):
     return goal
 
 
-def run(size, moves=10):
+def run(size, moves=30):
     start = generate_start_states(size)
     goal = generate_goal(start, size, moves)
 

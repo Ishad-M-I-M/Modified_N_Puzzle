@@ -1,1 +1,1 @@
-(363, left), (189, up), (335, right), (164, up), (5, left), (129, left), (191, up), (50, right), (362, right)
+(7, left), (5, up), (11, up), (8, right), (6, down)

@@ -86,8 +86,9 @@ class Queue:
 
 
 class ModifiedNPuzzle:
-    time = 10.0
-    def __init__(self, start, goal, h, w=False, time=10.0):
+    time = 60.0
+
+    def __init__(self, start, goal, h, w=False, time=time):
 
         if isinstance(start, list):
             self.start = start
