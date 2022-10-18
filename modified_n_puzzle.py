@@ -110,23 +110,20 @@ class ModifiedNPuzzle:
         self.w = w
         ModifiedNPuzzle.time = time
 
-    @staticmethod
-    def __readfile(path):
+    def __readfile(self, path):
         file = open(path, 'r')
         text = file.read()
         file.close()
         return re.split('\t|\n', text.strip())
 
-    @staticmethod
-    def __writefile(path, moves):
+    def __writefile(self, path, moves):
         text = ', '.join(['({}, {})'.format(tile, move) for tile, move in moves]) + '\n'
         file = open(path, 'w')
         file.write(text)
         file.close()
 
     # methods to limit run time
-    @staticmethod
-    def quit_function(fn_name):
+    def quit_function(self, fn_name):
         # print to stderr, unbuffered in Python 2.
         print(f'\033[91mTakes too long to solve. Interrupting the execution.\n '
               f'Failed to solve within : {ModifiedNPuzzle.time} s \n'
@@ -134,7 +131,7 @@ class ModifiedNPuzzle:
         sys.stderr.flush()  # Python 3 stderr is likely buffered.
         _thread.interrupt_main()  # raises KeyboardInterrupt
 
-    @staticmethod
+
     def exit_after(s):
         '''
         use as decorator to exit process if
