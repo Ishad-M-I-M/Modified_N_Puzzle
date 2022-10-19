@@ -85,6 +85,39 @@ class Queue:
         return len(self.lst)
 
 
+# methods to limit run time
+def quit_function(fn_name):
+    # print to stderr, unbuffered in Python 2.
+    print(f'\033[91mTakes too long to solve. Interrupting the execution.\n '
+          f'Failed to solve within : {ModifiedNPuzzle.time} s \n'
+          'try by specifying larger --time value\033[0m')
+    sys.stderr.flush()  # Python 3 stderr is likely buffered.
+    _thread.interrupt_main()  # raises KeyboardInterrupt
+
+
+def exit_after(s):
+    '''
+    use as decorator to exit process if
+    function takes longer than s seconds
+    :param time:
+    '''
+
+    def outer(fn):
+        def inner(*args, **kwargs):
+            timer = threading.Timer(s, quit_function, args=[fn.__name__])
+            timer.start()
+            try:
+                result = fn(*args, **kwargs)
+            finally:
+                timer.cancel()
+            return result
+
+        return inner
+
+    return outer
+
+
+
 class ModifiedNPuzzle:
     time = 60.0
 
@@ -121,36 +154,6 @@ class ModifiedNPuzzle:
         file = open(path, 'w')
         file.write(text)
         file.close()
-
-    # methods to limit run time
-    def quit_function(self, fn_name):
-        # print to stderr, unbuffered in Python 2.
-        print(f'\033[91mTakes too long to solve. Interrupting the execution.\n '
-              f'Failed to solve within : {ModifiedNPuzzle.time} s \n'
-              'try by specifying larger --time value\033[0m')
-        sys.stderr.flush()  # Python 3 stderr is likely buffered.
-        _thread.interrupt_main()  # raises KeyboardInterrupt
-
-
-    def exit_after(s):
-        '''
-        use as decorator to exit process if
-        function takes longer than s seconds
-        '''
-
-        def outer(fn):
-            def inner(*args, **kwargs):
-                timer = threading.Timer(s, ModifiedNPuzzle.quit_function, args=[fn.__name__])
-                timer.start()
-                try:
-                    result = fn(*args, **kwargs)
-                finally:
-                    timer.cancel()
-                return result
-
-            return inner
-
-        return outer
 
     @exit_after(time)
     def solve(self):
@@ -282,14 +285,14 @@ class ModifiedNPuzzle:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Modified N Puzzle Problem")
     parser.add_argument('start',
-                        metavar="Start Configuration",
+                        metavar="Start-Configuration",
                         type=str,
                         help="Text file containing start configuration of puzzle")
 
     parser.add_argument('goal',
-                        metavar="Goal Configuration",
+                        metavar="Goal-Configuration",
                         type=str,
-                        help="Text file containing start configuration of puzzle")
+                        help="Text file containing goal configuration of puzzle")
 
     parser.add_argument('--heuristic',
                         dest='h',
