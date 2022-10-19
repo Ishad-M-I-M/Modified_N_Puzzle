@@ -85,7 +85,17 @@ def generate_goal(state, size, n):
     return goal
 
 
+def write_configration(path, configuration, size):
+    with open(path, 'w') as f:
+        for row in [configuration[i:i + size] for i in range(0, size ** 2, size)]:
+            f.write("\t".join([str(x) for x in row]) + "\n")
+
+
+count = 1
+
+
 def run(size, moves=30):
+    global count
     start = generate_start_states(size)
     goal = generate_goal(start, size, moves)
 
@@ -101,15 +111,22 @@ def run(size, moves=30):
     )
 
     try:
-        return puzzle1.solve(), puzzle2.solve()
-    except:
+        manhattan = puzzle1.solve()
+        misplaced = puzzle2.solve()
+        write_configration("test data/start"+str(count)+".txt", start, size)
+        write_configration("test data/goal"+str(count)+".txt", goal, size)
+        count += 1
+        return [manhattan, misplaced]
+    except Exception as e:
+        print(e)
+    except KeyboardInterrupt:
         return run(size, moves)
 
 
 def write_results(results):
     with open('result.txt', 'w') as f:
         for scores in results:
-            f.write(str(scores[0]) + " " + str(scores[1])+"\n")
+            f.write(str(scores[0]) + " " + str(scores[1]) + "\n")
 
 
 if __name__ == "__main__":
