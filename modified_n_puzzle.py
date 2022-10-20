@@ -297,7 +297,7 @@ if __name__ == "__main__":
     parser.add_argument('--heuristic',
                         dest='h',
                         metavar="misplaced/manhattan",
-                        default="misplaced",
+                        default="manhattan",
                         choices=["misplaced", "manhattan"])
 
     parser.add_argument('--time',
